@@ -1,0 +1,424 @@
+openapi: "3.1"
+info:
+  description: |
+    The base specification for a Common Knowledge API.
+    All Common Knowledge APIs must follow this specification.
+    Any Common Knowledge API may extend this specification.
+  version: 0.1.0
+  title: Common Knowledge API Specification
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+servers:
+  - url: <Your Website>
+    description: ""
+tags:
+  - name: "Conversations"
+    description: "Conversations APIs"
+  - name: "Answers"
+    description: "Answers APIs"
+  - name: "Content"
+    description: "Content APIs"
+  - name: "Meta"
+    description: "Meta APIs"
+security:
+  - NotPartOfSpec: []
+paths:
+  /openapi:
+    get:
+      operationId: getOpenApi
+      summary: Get Open API specification
+      tags:
+        - Meta
+      description: Get Open API specification for a Common Knowledge API.
+      responses:
+        200:
+          description: The Open API specification of the Common Knowledge API
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenApiSpec"
+  /conversations/types:
+    get:
+      tags:
+        - Conversations
+      operationId: listConversationTypes
+      summary: List conversation types
+      description: |
+        List different conversation 'personas' types.
+        Each has its own set of data sources, system prompts, etc.
+      responses:
+        200:
+          description: List of conversation types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ConversationOverview"
+  # TODO: flush the following 2 endpoints out.
+  # basically same as what we currently have for conversation service
+  /conversations/types/{type}:
+    post:
+      tags:
+        - Conversations
+      operationId: createConversation
+      summary: Create new conversation
+      parameters:
+        - $ref: "#/components/parameters/ConversationType"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              # TODO: more
+      responses:
+        200:
+          description: The created conversation
+          content:
+            application/json:
+              schema:
+                type: object
+                # TODO: more
+  /conversations/types/{type}/{conversationId}:
+    post:
+      tags:
+        - Conversations
+      operationId: addMessage
+      summary: Add message to conversation
+      parameters:
+        - $ref: "#/components/parameters/ConversationType"
+        - $ref: "#/components/parameters/ConversationId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+
+  /answers/types:
+    get:
+      tags:
+        - "Answers"
+      operationId: listAnswerTypes
+      summary: List all answer types
+      responses:
+        200:
+          description: List of answer types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AnswerOverview"
+  /answers/types/{type}/respond:
+    post:
+      tags:
+        - "Answers"
+      operationId: generateAnswer
+      summary: Generate an answer
+      parameters:
+        - $ref: "#/components/parameters/AnswerType"
+      description: 1-off answer to questions.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Allow for different inputs for different answer types.
+      responses:
+        200:
+          description: The generated answer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  answer:
+                    type: string
+                    description: The generated answer
+                    example: "The answer to your question is..."
+                  metadata:
+                    $ref: "#/components/schemas/ArbitraryMetadata"
+  /content/search:
+    get:
+      tags:
+        - "Content"
+      operationId: search
+      summary: Search for content
+      parameters:
+        - name: query
+          in: query
+          required: true
+          description: The search query
+          schema:
+            type: string
+        - name: dataSources
+          in: query
+          required: false
+          description: The data sources to search
+          schema:
+            type: array
+            items:
+              type: string
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        200:
+          description: List of search results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContentResource"
+
+      description: Perform search for related content.
+  /content/data-sources:
+    get:
+      description: list all data sources with metadata
+      operationId: listAllDataSources
+      summary: List all data sources
+      tags:
+        - Content
+      responses:
+        200:
+          description: List of data sources
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DataSource"
+  /content/data-sources/{dataSourceName}:
+    get:
+      tags:
+        - Content
+      parameters:
+        - $ref: "#/components/parameters/DataSourceName"
+      description: Get metadata for data source
+      operationId: getDataSourceMetadata
+      summary: Get metadata for a data source
+      responses:
+        200:
+          description: Metadata for the data source
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataSource"
+  /content/data-sources/{dataSourceName}/resources:
+    get:
+      description: Get all resources for a data source
+      parameters:
+        - $ref: "#/components/parameters/DataSourceName"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      operationId: getDataSourceResources
+      tags:
+        - Content
+      summary: Get resources for a data source
+      responses:
+        200:
+          description: List of resources
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContentResource"
+  /content/resources:
+    get:
+      operationId: getContentResources
+      summary: Get content resources
+      parameters:
+        - $ref: "#/components/parameters/LastUpdated"
+      description: Get resources that match certain filter criteria. With pagination.
+      tags:
+        - Content
+      responses:
+        200:
+          description: List of resources
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContentResource"
+  /content/metadata:
+    get:
+      operationId: getContentMetadata
+      summary: Get content metadata
+      description: Lists different content types to help with filtering.
+      tags:
+        - Content
+      responses:
+        200:
+          description: List of content Metadata filters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContentType"
+components:
+  parameters:
+    AnswerType:
+      name: type
+      in: path
+      required: true
+      description: The type of answer to generate
+      schema:
+        type: string
+    ConversationType:
+      name: type
+      in: path
+      required: true
+      description: The type of conversation to generate
+      schema:
+        type: string
+    ConversationId:
+      name: conversationId
+      in: path
+      required: true
+      description: The ID of the conversation
+      schema:
+        type: string
+    DataSourceName:
+      name: dataSourceName
+      in: path
+      required: true
+      description: The name of the data source
+      schema:
+        type: string
+    LastUpdated:
+      name: lastUpdated
+      in: query
+      required: false
+      description: The last updated date of the content
+      schema:
+        $ref: "#/components/schemas/Timestamp"
+    Limit:
+      name: limit
+      in: query
+      required: false
+      description: The number of results to return
+      schema:
+        type: integer
+        format: int32
+    Offset:
+      name: offset
+      in: query
+      required: false
+      description: The number of results to skip
+      schema:
+        type: integer
+        format: int32
+
+  schemas:
+    AnswerOverview:
+      type: object
+      properties:
+        type:
+          type: string
+          description: Type of answer
+          example: "technical-content"
+        description:
+          type: string
+          description: Description of the answer type
+          example: "Generates a response based on the technical content."
+        metadata:
+          $ref: "#/components/schemas/ArbitraryMetadata"
+    ArbitraryMetadata:
+      type: object
+      additionalProperties:
+        type: string
+    ContentResource:
+      type: object
+      properties:
+        content:
+          type: string
+          description: The content of the search result
+          examples:
+            - "How to create a MongoDB Atlas cluster"
+            - "https://mongodb.com/docs/some-image.png"
+        dataSource:
+          type: string
+          description: The data source of the search result
+          example: "MongoDB Documentation"
+        uri:
+          type: string
+          description: The URI of the search result data.
+        format:
+          type: string
+          description: The format of the search result
+          examples:
+            - "md"
+            - "txt"
+            - "png"
+        lastUpdated:
+          $ref: "#/components/schemas/Timestamp"
+          description: Last updated date of the search result
+        metadata:
+          $ref: "#/components/schemas/ArbitraryMetadata"
+    ContentType:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the content type
+          examples:
+            - "contentType"
+            - "lastUpdated"
+            - "isLatestVersion"
+        type:
+          type: string
+          description: Type of metadata
+          examples:
+            - "string"
+            - "number"
+            - "boolean"
+        description:
+          type: string
+          description: Description of the content type
+          example: "Technical content for the MongoDB documentation."
+    ConversationOverview:
+      type: object
+      properties:
+        type:
+          type: string
+          description: Type of conversation
+          example: "docs-chatbot"
+        description:
+          type: string
+          description: Description of the conversation type
+          example: "Chat with the MongoDB technical documentation."
+        metadata:
+          $ref: "#/components/schemas/ArbitraryMetadata"
+    DataSource:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the data source
+          example: "MongoDB Documentation"
+        description:
+          type: string
+          description: Description of the data source
+          example: "Technical documentation for MongoDB products."
+        lastUpdated:
+          type: number
+          description: Last updated date of the data source
+          format: timestamp
+        metadata:
+          $ref: "#/components/schemas/ArbitraryMetadata"
+    OpenApiSpec:
+      type: object
+      description: An Open API specification
+    Timestamp:
+      type: number
+      format: timestamp
+  securitySchemes:
+    NotPartOfSpec:
+      type: apiKey
+      name: NotPartOfSpec
+      in: header
+      description: Security schema is not part of the base Open Knowledge API specification.
