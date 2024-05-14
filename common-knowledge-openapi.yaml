@@ -56,8 +56,6 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ConversationOverview"
-  # TODO: flush the following 2 endpoints out.
-  # basically same as what we currently have for conversation service
   /conversations/types/{type}:
     post:
       tags:
@@ -66,21 +64,14 @@ paths:
       summary: Create new conversation
       parameters:
         - $ref: "#/components/parameters/ConversationType"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              # TODO: more
       responses:
         200:
           description: The created conversation
           content:
             application/json:
               schema:
-                type: object
-                # TODO: more
-  /conversations/types/{type}/{conversationId}:
+                $ref: "#/components/schemas/Conversation"
+  /conversations/types/{type}/{conversationId}/messages:
     post:
       tags:
         - Conversations
@@ -93,8 +84,14 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-
+              $ref: "#/components/schemas/AddMessage"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
   /answers/types:
     get:
       tags:
@@ -314,6 +311,16 @@ components:
         format: int32
 
   schemas:
+    AddMessage:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          format: markdown
+          description: |
+            Markdown-formatted message from the user.
     AnswerOverview:
       type: object
       properties:
@@ -380,6 +387,98 @@ components:
           type: string
           description: Description of the content type
           example: "Technical content for the MongoDB documentation."
+    Conversation:
+      type: object
+      required:
+        - _id
+        - messages
+        - createdAt
+      properties:
+        _id:
+          type: string
+          description: The unique identifier for a conversation.
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/Message"
+        createdAt:
+          type: integer
+          description: Unix timestamp for when the conversation was created.
+    Message:
+      type: object
+      required:
+        - id
+        - role
+        - content
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: The unique identifier for a message.
+        role:
+          type: string
+          enum:
+            - user
+            - assistant
+        content:
+          type: string
+          format: markdown
+          description: |
+            Markdown-formatted response to user's chat message in the context
+            of the conversation.
+        rating:
+          type: boolean
+          description: >
+            Set to `true` if the user liked the response, `false` if the user
+            didn't like the response.
+
+            No value if user didn't rate the response.
+
+
+            Note that only messages with `role: "assistant"` can be rated.
+        userComment:
+          type: string
+          description: >
+            Comment from the user clarifying why they liked or disliked
+
+            the message. No value if user didn't comment on the response.
+
+
+            Note that only messages with `role: "assistant"` can be commented
+            on.
+        createdAt:
+          type: integer
+          description: |
+            Unix timestamp for when the message was sent.
+        references:
+          $ref: "#/components/schemas/References"
+    References:
+      type: array
+      description: |
+        List of references to external resources that are relevant
+        to the message. For example, if the message is a response to
+        a user's question about how to connect, the list of
+        references could include links to the documentation, dev
+        center articles, or a video lesson on MongoDB University.
+      items:
+        type: object
+        required:
+          - title
+          - url
+        properties:
+          title:
+            type: string
+            description: |
+              Title of the reference. This is what shows up in
+              rendered links. For example, "How to connect to
+              MongoDB Atlas".
+          url:
+            type: string
+            format: uri
+            description: >
+              URL to the reference. For example,
+              "https://mongodb.com/docs/atlas/getting-started".
+
     ConversationOverview:
       type: object
       properties:
