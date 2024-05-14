@@ -1,19 +1,21 @@
 # Common Knowledge Project
 
-The Common Knowledge Project supports sharing of information on the internet for human, AI, and programmatic access.
+The Common Knowledge Project (CKP) supports sharing information for use by humans and artificial intelligence (AI) through programmatic access.
 
-## Goals
+## Motivation
 
-The Common Knowledge Project (CKP) has the following goals:
+> Knowledge refers to information that has been processed, organized, and understood in a way that makes it useful for decision making, problem solving, or enabling intelligent action. It goes beyond raw data to include meaning, context and applicability.
+>
+> _Claude 3 Opus_
 
-- supports the sharing of information on the internet for human and programmatic access.
-- designed for humans and machines to be able to interpret
-  - machines and particularly LLMs and agentic AI systems are first class users
-  - present information in a way optimized for them
-- as websites are optimized for human users, the common knowledge aims to support AI users while still being human interpretable
-- as language models and agentic systems become interfaces between humans and information, we aim to facilitate that experience. examples of this include:
-  - information retrieval for retrieval-augmented generation
-  - tool calling
+Since the invention of writing, humans have been the primary creators and consumers of "knowledge".
+However, with the rise of Large Language Models (LLMs), AI is increasingly capable of understanding and creating knowledge. Coming agentic AI systems will also be increasingly capable of acting on knowledge.
+
+Humans are increasingly using AI systems to interface with knowledge. This takes the form of querying language models directly and with retrieval-augmented generation (RAG). We increasingly see AI systems as an interface for human consumption of knowledge.
+
+As the world wide web has made information more accessible to humans, the Common Knowledge Project aims to make knowledge more accessible to AI systems. While AI systems are capable of consuming information on the web, the information is not optimized for them.
+
+The Common Knowledge Project aims to provide a way to share information that is optimized for both humans and AI systems.
 
 ## Common Knowledge API Specification
 
