@@ -1,4 +1,4 @@
-openapi: "3.1"
+openapi: "3.1.0"
 info:
   description: |
     MongoDB Knowledge API following the Common Knowledge API specification.
@@ -37,6 +37,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/OpenApiSpec"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        500:
+          $ref: "#/components/responses/InternalServerError"
   /conversations/types:
     get:
       tags:
@@ -55,6 +59,10 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ConversationOverview"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        500:
+          $ref: "#/components/responses/InternalServerError"
   /conversations/types/{type}:
     post:
       tags:
@@ -145,11 +153,14 @@ paths:
           $ref: "#/components/responses/NotFound"
         500:
           $ref: "#/components/responses/InternalServerError"
-  /conversations/{conversationId}:
+  /conversations/types/{type}/{conversationId}:
     get:
       operationId: getConversation
       summary: Get a conversation
+      tags:
+        - Conversations
       parameters:
+        - $ref: "#/components/parameters/ConversationType"
         - $ref: "#/components/parameters/ConversationId"
       responses:
         "200":
@@ -164,11 +175,14 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /conversations/{conversationId}/messages/{messageId}/rating:
+  /conversations/types/{type}/{conversationId}/messages/{messageId}/rating:
     post:
       operationId: rateMessage
       summary: Rate message
+      tags:
+        - Conversations
       parameters:
+        - $ref: "#/components/parameters/ConversationType"
         - $ref: "#/components/parameters/ConversationId"
         - $ref: "#/components/parameters/MessageId"
       requestBody:
@@ -185,20 +199,22 @@ paths:
           $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
-  /conversations/{conversationId}/messages/{messageId}/comment:
+  /conversations/types/{type}/{conversationId}/messages/{messageId}/comment:
     post:
       operationId: commentMessage
       summary: Add comment to assistant message
+      tags:
+        - Conversations
       description: >
         Add a comment to an assistant message that clarifies a thumbs up/down
         rating.
-
 
         You can only rate an an assistant message that has a thumbs up/down
         rating. You can only rate a message once. The server returns a `400`
         error response if the message is not from the assistant, is not rated,
         or has already been rated.
       parameters:
+        - $ref: "#/components/parameters/ConversationType"
         - $ref: "#/components/parameters/ConversationId"
         - $ref: "#/components/parameters/MessageId"
       requestBody:
@@ -528,7 +544,12 @@ components:
       schema:
         type: array
         items:
-          type: string
+          type: object
+          properties:
+            type:
+              type: string
+            value:
+              type: string
   responses:
     BadRequest:
       description: Bad Request
@@ -631,6 +652,7 @@ components:
         - _id
         - messages
         - createdAt
+        - type
       properties:
         _id:
           type: string
@@ -642,6 +664,10 @@ components:
         createdAt:
           type: integer
           description: Unix timestamp for when the conversation was created.
+        type:
+          type: string
+          description: Type of conversation
+          example: "docs-chatbot"
     ErrorResponse:
       type: object
     Message:

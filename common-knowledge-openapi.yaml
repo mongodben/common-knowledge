@@ -15,8 +15,8 @@ servers:
 tags:
   - name: "Conversations"
     description: "Conversations APIs"
-  - name: "Answers"
-    description: "Answers APIs"
+  - name: "Generation"
+    description: "Generation APIs"
   - name: "Content"
     description: "Content APIs"
   - name: "Meta"
