@@ -295,7 +295,7 @@ paths:
         - $ref: "#/components/parameters/Query"
         - $ref: "#/components/parameters/DataSources"
         - $ref: "#/components/parameters/Format"
-        - $ref: "#/components/parameters/LastUpdatedRange"
+        - $ref: "#/components/parameters/LastUpdated"
         - $ref: "#/components/parameters/Limit"
           max: 20
         - $ref: "#/components/parameters/Offset"
@@ -384,10 +384,9 @@ paths:
       operationId: getContentResources
       summary: Get content resources
       parameters:
-        - $ref: "#/components/parameters/Query"
         - $ref: "#/components/parameters/DataSources"
         - $ref: "#/components/parameters/Format"
-        - $ref: "#/components/parameters/LastUpdatedRange"
+        - $ref: "#/components/parameters/LastUpdated"
         - $ref: "#/components/parameters/Limit"
           max: 20
         - $ref: "#/components/parameters/Offset"
@@ -489,20 +488,14 @@ components:
       description: The format of the search result
       schema:
         type: string
-    LastUpdatedRange:
-      name: lastUpdatedRange
+    LastUpdated:
+      name: lastUpdated
       in: query
       required: false
-      description: The range of last updated dates
+      description: Include resources updated after the timestamp.
       schema:
-        type: array
-        items:
-          $ref: "#/components/schemas/Timestamp"
-          minItems: 2
-          maxItems: 2
-        examples:
-          - [0, 1000000000000]
-          - [1000000000000, 2000000000000]
+        type: integer
+        example: 1631535600
     Limit:
       name: limit
       in: query
